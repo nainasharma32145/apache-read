@@ -1,0 +1,61 @@
+import org.apache.poi.ss.usermodel.*;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+
+task readExcel {
+    doLast {
+        String excelFilePath = "path/to/your/excel/file.xlsx";
+
+        try (FileInputStream fis = new FileInputStream(excelFilePath);
+             Workbook workbook = WorkbookFactory.create(fis)) {
+
+            List<Person> persons = readDataFromExcel(workbook);
+
+            // Do something with the list of Person objects
+            for (Person person : persons) {
+                println(person);
+            }
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private List<Person> readDataFromExcel(Workbook workbook) {
+        List<Person> persons = new ArrayList<>();
+
+        Sheet sheet = workbook.getSheetAt(0); // Assuming data is in the first sheet
+
+        Iterator<Row> iterator = sheet.iterator();
+
+        // Skip header row
+        if (iterator.hasNext()) {
+            iterator.next();
+        }
+
+        while (iterator.hasNext()) {
+            Row currentRow = iterator.next();
+            Iterator<Cell> cellIterator = currentRow.iterator();
+
+            Person person = new Person();
+
+            // Assuming the first cell contains the name and the second cell contains the age
+            if (cellIterator.hasNext()) {
+                Cell nameCell = cellIterator.next();
+                person.setName(nameCell.getStringCellValue());
+            }
+
+            if (cellIterator.hasNext()) {
+                Cell ageCell = cellIterator.next();
+                person.setAge((int) ageCell.getNumericCellValue());
+            }
+
+            persons.add(person);
+        }
+
+        return persons;
+    }
+}
